@@ -29,7 +29,8 @@ public class TagFilterConsumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException, IOException {
 
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("please_rename_unique_group_name");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("message_consumer_filter_tag_group_1");
+        consumer.setNamesrvAddr("localhost:9876");
 
         consumer.subscribe("TagFilterTest", "TagA || TagC");
 

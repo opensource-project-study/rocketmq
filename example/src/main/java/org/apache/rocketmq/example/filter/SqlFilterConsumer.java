@@ -29,9 +29,11 @@ public class SqlFilterConsumer {
 
     public static void main(String[] args) throws Exception {
 
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("please_rename_unique_group_name");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("message_consumer_sql_filter_group_1");
+        consumer.setNamesrvAddr("localhost:9876");
 
-        // Don't forget to set enablePropertyFilter=true in broker
+        // Don't forget to set enablePropertyFilter=true in broker.conf
+        // 不符合条件的消息消费了，只是被过滤掉了，consumeMessage()方法不会拿到 不符合条件的消息
         consumer.subscribe("SqlFilterTest",
             MessageSelector.bySql("(TAGS is not null and TAGS in ('TagA', 'TagB'))" +
                 "and (a is not null and a between 0 and 3)"));

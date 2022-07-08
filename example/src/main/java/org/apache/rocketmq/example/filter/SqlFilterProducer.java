@@ -26,7 +26,8 @@ public class SqlFilterProducer {
 
     public static void main(String[] args) throws Exception {
 
-        DefaultMQProducer producer = new DefaultMQProducer("please_rename_unique_group_name");
+        DefaultMQProducer producer = new DefaultMQProducer("message_producer_sql_filter_group_1");
+        producer.setNamesrvAddr("localhost:9876");
 
         producer.start();
 
