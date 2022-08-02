@@ -24,6 +24,7 @@ public class Consumer {
         consumer.setNamesrvAddr("127.0.0.1:9876");
         // 订阅Topics
         consumer.subscribe("TestTopic", "*");
+        // 处理消息的线程数
         consumer.setConsumeThreadMin(3);
         consumer.setConsumeThreadMax(6);
         // 注册消息监听者
