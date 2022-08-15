@@ -27,6 +27,8 @@ public class Producer {
 
         DefaultMQProducer producer = new DefaultMQProducer("simple_message_producer_group_1");
         producer.setNamesrvAddr("localhost:9876");
+        // 同步发送失败重投次数 参考：docs/cn/features.md
+        producer.setRetryTimesWhenSendFailed(2);
         producer.start();
 
         for (int i = 0; i < 1; i++)
@@ -36,7 +38,8 @@ public class Producer {
                         "TagA",
                         "OrderID188",
                         "Hello world".getBytes(RemotingHelper.DEFAULT_CHARSET));
-                    SendResult sendResult = producer.send(msg);
+                    // 5000ms内没有发送成功，重试2次（上面配置的重试次数）
+                    SendResult sendResult = producer.send(msg, 5000L);
                     System.out.printf("%s%n", sendResult);
                 }
 

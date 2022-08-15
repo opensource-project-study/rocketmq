@@ -30,8 +30,10 @@ public class AsyncProducer {
     public static void main(
         String[] args) throws MQClientException, InterruptedException, UnsupportedEncodingException {
 
-        DefaultMQProducer producer = new DefaultMQProducer("Jodie_Daily_test");
+        DefaultMQProducer producer = new DefaultMQProducer("simple_message_producer_group_1");
+        producer.setNamesrvAddr("localhost:9876");
         producer.start();
+        // 异步发送失败重试次数，参考：docs/cn/features.md
         producer.setRetryTimesWhenSendAsyncFailed(0);
 
         int messageCount = 100;
@@ -43,6 +45,7 @@ public class AsyncProducer {
                     "TagA",
                     "OrderID188",
                     "Hello world".getBytes(RemotingHelper.DEFAULT_CHARSET));
+                // 也可以设置超时时间
                 producer.send(msg, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
