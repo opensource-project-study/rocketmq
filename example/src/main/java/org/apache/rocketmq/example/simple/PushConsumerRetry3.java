@@ -16,9 +16,9 @@ import java.util.List;
  * @author yuwenbo@kkworld.com
  * @date 2022/8/15
  */
-public class PushConsumerRetry1 {
+public class PushConsumerRetry3 {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PushConsumerRetry1.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PushConsumerRetry3.class);
 
     private static final int MAX_RECONSUME_TIMES = 20;
 
@@ -39,8 +39,9 @@ public class PushConsumerRetry1 {
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
 
-                // 消息重试
-                return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                // 抛出异常，消息重试
+                int i = 1 / 0;
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
         consumer.start();

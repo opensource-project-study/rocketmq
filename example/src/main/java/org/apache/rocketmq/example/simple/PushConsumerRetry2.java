@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * @author yuwenbo@kkworld.com
- * @date 2022/8/15
+ * @date 2022/8/16
  */
 public class PushConsumerRetry2 {
 
@@ -27,7 +27,7 @@ public class PushConsumerRetry2 {
         consumer.setNamesrvAddr("localhost:9876");
         consumer.subscribe("TopicTest", "*");
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
-        consumer.setMaxReconsumeTimes(20);
+        consumer.setMaxReconsumeTimes(MAX_RECONSUME_TIMES);
         consumer.registerMessageListener(new MessageListenerConcurrently() {
 
             @Override
@@ -39,8 +39,8 @@ public class PushConsumerRetry2 {
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
 
-                int i = 1 / 0;
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                // 消息重试
+                return null;
             }
         });
         consumer.start();
