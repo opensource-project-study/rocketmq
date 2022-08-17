@@ -22,6 +22,8 @@ import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 
+import java.util.concurrent.TimeUnit;
+
 public class Producer {
     public static void main(String[] args) throws MQClientException, InterruptedException {
 
@@ -38,8 +40,8 @@ public class Producer {
                         "TagA",
                         "OrderID188",
                         "Hello world".getBytes(RemotingHelper.DEFAULT_CHARSET));
-                    // 5000ms内没有发送成功，重试2次（上面配置的重试次数）
-                    SendResult sendResult = producer.send(msg, 5000L);
+                    // 10s内没有发送成功，重试2次（上面配置的重试次数）
+                    SendResult sendResult = producer.send(msg, TimeUnit.SECONDS.toMillis(10));
                     System.out.printf("%s%n", sendResult);
                 }
 

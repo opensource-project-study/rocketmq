@@ -26,8 +26,8 @@ public class PushConsumerRetry4 {
     public static void main(String[] args) throws InterruptedException, MQClientException {
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("simple_message_consumer_group_1");
         consumer.setNamesrvAddr("localhost:9876");
-        // 设置Consumer超时时间
-        consumer.setConsumeTimeout(TimeUnit.SECONDS.toMillis(5));
+        // 设置Consumer超时时间，单位：分钟
+        consumer.setConsumeTimeout(1);
         consumer.subscribe("TopicTest4", "*");
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
         consumer.setMaxReconsumeTimes(MAX_RECONSUME_TIMES);
@@ -45,7 +45,7 @@ public class PushConsumerRetry4 {
                 // 处理时间超过 设置的超时时间，导致Broker重新push消息，引起消息重试
                 // 好像并没有重试，为什么呢？？？
                 try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+                    Thread.sleep(TimeUnit.MINUTES.toMillis(5));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
