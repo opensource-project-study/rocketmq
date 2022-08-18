@@ -43,7 +43,6 @@ public class PushConsumerRetry4 {
                 }
 
                 // 处理时间超过 设置的超时时间，导致Broker重新push消息，引起消息重试
-                // 好像并没有重试，为什么呢？？？
                 try {
                     Thread.sleep(TimeUnit.MINUTES.toMillis(5));
                 } catch (InterruptedException e) {
