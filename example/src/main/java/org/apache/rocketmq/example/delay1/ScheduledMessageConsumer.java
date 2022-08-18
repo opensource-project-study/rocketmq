@@ -24,7 +24,8 @@ public class ScheduledMessageConsumer {
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages, ConsumeConcurrentlyContext context) {
                 for (MessageExt message : messages) {
                     // Print approximate delay time period
-                    System.out.println("Receive message[msgId=" + message.getMsgId() + "] " + (System.currentTimeMillis() - message.getBornTimestamp()) + "ms later");
+                    // 这里的message.getMsgId实际上是 MessageClientExt.getMsgId
+                    System.out.println("Receive message[msgId=" + message.getMsgId() + "] " + (System.currentTimeMillis() - message.getBornTimestamp()) + "ms later" + "..." + message);
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
