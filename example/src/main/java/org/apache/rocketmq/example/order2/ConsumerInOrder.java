@@ -44,7 +44,7 @@ public class ConsumerInOrder {
 
                 try {
                     //模拟业务逻辑处理中...
-                    TimeUnit.SECONDS.sleep(random.nextInt(10));
+//                    TimeUnit.SECONDS.sleep(random.nextInt(10));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
