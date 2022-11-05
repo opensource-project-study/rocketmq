@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.example.filter;
+package org.apache.rocketmq.example.filter.taggroup2;
 
-import java.io.IOException;
-import java.util.List;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -25,17 +23,17 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 
+import java.io.IOException;
+import java.util.List;
+
 public class TagFilterConsumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException, IOException {
 
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("message_consumer_filter_tag_group_1");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("message_consumer_filter_tag_group_3");
         consumer.setNamesrvAddr("localhost:9876");
 
-        // 不符合条件的消息消费了，只是被过滤掉了，consumeMessage()方法不会拿到 不符合条件的消息
-        // RocketMQ-Dashboard 消息的TrackType在该消费组下的状态为CONSUMED_BUT_FILTERED
-        // 注意，相同 消费组 下的实例，若为CLUSTERING模式，
-        consumer.subscribe("TagFilterTest", "TagA || TagC");
+        consumer.subscribe("TagFilterTest", "TagA || TagB || TagC");
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
 
