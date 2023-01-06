@@ -31,6 +31,25 @@ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 
+/**
+ * 参考：/docs/cn/design.md
+ * <p>
+ *
+ * 传输内容字节流：<p>
+ * <code>
+ * +----------------+----------------------------------+-------------+--------------+
+ * | Message Length | Serialization type+Header length | Data Header | Message Body |
+ * +----------------+----------------------------------+-------------+--------------+
+ * </code>
+ * <pre>
+ *     可见传输内容主要可以分为以下4部分：
+ *     (1) 消息长度：总长度，四个字节存储，占用一个int类型；
+ *         注意：消息长度一般称为"长度字段"，在这里<b>不包含</b>"长度字段"本身占用的字节数，即"长度字段"的值表示的是该帧中"长度字段"之后的3个部分的字节总数
+ *     (2) 序列化类型&消息头长度：同样占用一个int类型，第一个字节表示序列化类型，后面三个字节表示消息头长度；
+ *     (3) 消息头数据：经过序列化后的消息头数据；
+ *     (4) 消息主体数据：消息主体的二进制字节数据内容；
+ * </pre>
+ */
 public class RemotingCommand {
     public static final String SERIALIZE_TYPE_PROPERTY = "rocketmq.serialize.type";
     public static final String SERIALIZE_TYPE_ENV = "ROCKETMQ_SERIALIZE_TYPE";
@@ -143,6 +162,7 @@ public class RemotingCommand {
 
     public static RemotingCommand decode(final ByteBuffer byteBuffer) {
         int length = byteBuffer.limit();
+        // 因为"长度字段"在byteBuffer中已经被去除，所以这里读取的第一个int值是原传输内容的第2部分，即"Serialization type+Header length"
         int oriHeaderLen = byteBuffer.getInt();
         int headerLength = getHeaderLength(oriHeaderLen);
 
@@ -162,6 +182,9 @@ public class RemotingCommand {
         return cmd;
     }
 
+    /**
+     * 去除length的第1个字节。换句话说保留length的后3个字节，其值表示Header length
+     */
     public static int getHeaderLength(int length) {
         return length & 0xFFFFFF;
     }
@@ -183,6 +206,9 @@ public class RemotingCommand {
         return null;
     }
 
+    /**
+     * source右移24位，然后和0xFF取按位与操作以保留前8位，这1个字节表示的是序列化类型
+     */
     public static SerializeType getProtocolType(int source) {
         return SerializeType.valueOf((byte) ((source >> 24) & 0xFF));
     }
@@ -208,6 +234,9 @@ public class RemotingCommand {
         return true;
     }
 
+    /**
+     * 按照大端模式（低位在高址，高位在低址）存放
+     */
     public static byte[] markProtocolType(int source, SerializeType type) {
         byte[] result = new byte[4];
 
