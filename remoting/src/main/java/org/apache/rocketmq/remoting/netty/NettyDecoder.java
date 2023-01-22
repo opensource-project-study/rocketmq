@@ -63,8 +63,8 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
      */
     public NettyDecoder() {
         // 帧中从第0个字节起数4个字节表示"长度字段"，该"长度字段"的值表示该帧中"长度字段"之后的字节总数
-        // 第3个参数为0，表示"长度字段"的值的补偿值为0，即不对"长度字段"的值做校正
-        // 第4个参数为4表示去除该帧中前4个字节
+        // 第4个参数为0，表示"长度字段"的值的补偿值为0，即不对"长度字段"的值做校正
+        // 第5个参数为4表示去除该帧中前4个字节
         super(FRAME_MAX_LENGTH, 0, 4, 0, 4);
     }
 
