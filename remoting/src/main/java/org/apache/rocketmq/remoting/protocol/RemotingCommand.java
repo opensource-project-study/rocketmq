@@ -397,6 +397,9 @@ public class RemotingCommand {
         }
     }
 
+    /**
+     * {@link CommandCustomHeader}其实现类的对象中的非静态数据域（即实例数据域），会写入{@link RemotingCommand#extFields}这个字段中，然后一起随着RemotingCommand实例被序列化为字节数组
+     */
     public void makeCustomHeaderToNet() {
         if (this.customHeader != null) {
             Field[] fields = getClazzFields(customHeader.getClass());
@@ -434,6 +437,7 @@ public class RemotingCommand {
         int length = 4;
 
         // 2> header data length
+        // 这里，RemotingCommand对象序列化为了字节数组
         byte[] headerData;
         headerData = this.headerEncode();
 
