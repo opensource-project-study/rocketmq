@@ -260,6 +260,7 @@ public class RemotingCommand {
         this.customHeader = customHeader;
     }
 
+    /** {@link RemotingCommand#makeCustomHeaderToNet} */
     public CommandCustomHeader decodeCommandCustomHeader(
         Class<? extends CommandCustomHeader> classHeader) throws RemotingCommandException {
         CommandCustomHeader objectHeader;
