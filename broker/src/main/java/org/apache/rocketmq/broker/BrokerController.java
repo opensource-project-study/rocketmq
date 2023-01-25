@@ -400,6 +400,7 @@ public class BrokerController {
                 }
             }, 1000 * 10, 1000 * 60, TimeUnit.MILLISECONDS);
 
+            // 如果配置了NameServer的地址，就走配置；否则，就从WSAddr（参考：org.apache.rocketmq.common.MixAll.getWSAddr）取NameServer的地址
             if (this.brokerConfig.getNamesrvAddr() != null) {
                 this.brokerOuterAPI.updateNameServerAddressList(this.brokerConfig.getNamesrvAddr());
                 log.info("Set user specified name server address: {}", this.brokerConfig.getNamesrvAddr());
@@ -887,6 +888,7 @@ public class BrokerController {
             this.registerBrokerAll(true, false, true);
         }
 
+        // broker实例启动时，注册IP、端口到所有的NameServer实例
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override

@@ -16,10 +16,17 @@
  */
 package org.apache.rocketmq.common.constant;
 
+/**
+ * 权限
+ */
 public class PermName {
+    /** 0B1000 */
     public static final int PERM_PRIORITY = 0x1 << 3;
+    /** 0B0100 */
     public static final int PERM_READ = 0x1 << 2;
+    /** 0B0010 */
     public static final int PERM_WRITE = 0x1 << 1;
+    /** 0B0001 */
     public static final int PERM_INHERIT = 0x1;
 
     public static String perm2String(final int perm) {
