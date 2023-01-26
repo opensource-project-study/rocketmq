@@ -34,6 +34,7 @@ public class BrokerConfig {
     private String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
     @ImportantField
     private String brokerIP1 = RemotingUtil.getLocalAddress();
+    /** 高可用IP */
     private String brokerIP2 = RemotingUtil.getLocalAddress();
     @ImportantField
     private String brokerName = localHostName();

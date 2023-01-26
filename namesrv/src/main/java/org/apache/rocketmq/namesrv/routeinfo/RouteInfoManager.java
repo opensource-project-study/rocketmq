@@ -99,6 +99,27 @@ public class RouteInfoManager {
         return topicList.encode();
     }
 
+    /**
+     *
+     * 主要操作了几个缓存，用来保存broker的信息：
+     * <p>
+     * <ul>
+     *     <li>clusterAddrTable</li>
+     *     <li>brokerAddrTable</li>
+     *     <li>brokerLiveTable</li>
+     *     <li>filterServerTable</li>
+     * </ul>
+     *
+     * @param clusterName clusterName
+     * @param brokerAddr brokerAddr
+     * @param brokerName brokerName
+     * @param brokerId brokerId
+     * @param haServerAddr haServerAddr
+     * @param topicConfigWrapper topicConfigWrapper
+     * @param filterServerList filterServerList
+     * @param channel channel
+     * @return ret
+     */
     public RegisterBrokerResult registerBroker(
         final String clusterName,
         final String brokerAddr,

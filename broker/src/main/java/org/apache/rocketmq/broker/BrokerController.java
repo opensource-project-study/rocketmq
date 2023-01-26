@@ -179,6 +179,7 @@ public class BrokerController {
         this.nettyClientConfig = nettyClientConfig;
         this.messageStoreConfig = messageStoreConfig;
         this.consumerOffsetManager = new ConsumerOffsetManager(this);
+        // 创建一系列系统的topic配置，写入org.apache.rocketmq.broker.topic.TopicConfigManager.topicConfigTable中
         this.topicConfigManager = new TopicConfigManager(this);
         this.pullMessageProcessor = new PullMessageProcessor(this);
         this.pullRequestHoldService = new PullRequestHoldService(this);
@@ -888,7 +889,7 @@ public class BrokerController {
             this.registerBrokerAll(true, false, true);
         }
 
-        // broker实例启动时，周期性的注册IP、端口到所有的NameServer实例
+        // broker实例启动时，周期性的注册自身的IP、端口到所有的NameServer实例
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -991,6 +992,7 @@ public class BrokerController {
         final int timeoutMills) {
 
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
+        // broker和NameServer间进行了通信
         List<Boolean> changeList = brokerOuterAPI.needRegister(clusterName, brokerAddr, brokerName, brokerId, topicConfigWrapper, timeoutMills);
         boolean needRegister = false;
         for (Boolean changed : changeList) {
