@@ -888,7 +888,7 @@ public class BrokerController {
             this.registerBrokerAll(true, false, true);
         }
 
-        // broker实例启动时，注册IP、端口到所有的NameServer实例
+        // broker实例启动时，周期性的注册IP、端口到所有的NameServer实例
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
