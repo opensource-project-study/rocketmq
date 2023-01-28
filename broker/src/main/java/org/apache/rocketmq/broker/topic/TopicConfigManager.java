@@ -165,6 +165,16 @@ public class TopicConfigManager extends ConfigManager {
                     if (topicConfig != null)
                         return topicConfig;
 
+                    /*
+                     * defaultTopic == DefaultMQProducer.createTopicKey，默认为org.apache.rocketmq.common.topic.TopicValidator.AUTO_CREATE_TOPIC_KEY_TOPIC
+                     * 1. 若org.apache.rocketmq.common.BrokerConfig.autoCreateTopicEnable一直设置为false，那么在创建TopicConfigManager实例时，
+                     * 不会把TopicValidator.AUTO_CREATE_TOPIC_KEY_TOPIC这个Key写入缓存topicConfigTable中，从而取不到defaultTopicConfig，这里自然不会创建TopicConfig实例。
+                     * 2. 若org.apache.rocketmq.common.BrokerConfig.autoCreateTopicEnable先保持默认为true，那么TopicValidator.AUTO_CREATE_TOPIC_KEY_TOPIC这个Key会写入缓存topicConfigTable中，
+                     * 然后若autoCreateTopicEnable过一段时间后设置为false，虽然可以取得defaultTopicConfig，但是此时会设置defaultTopicConfig.perm为读写权限，没有PERM_INHERIT权限，从而无法创建TopicConfig实例
+                     *
+                     * 无论如何，autoCreateTopicEnable设置为false后，就不能在这里创建TopicConfig实例，也就不能创建Topic；此时，可以在RocketMQ控制台，（对应rocketmq-dashboard项目）手动添加Topic，
+                     * RocketMQ后台会调用方法org.apache.rocketmq.tools.admin.DefaultMQAdminExt.createAndUpdateTopicConfig进行创建。
+                     */
                     TopicConfig defaultTopicConfig = this.topicConfigTable.get(defaultTopic);
                     if (defaultTopicConfig != null) {
                         if (defaultTopic.equals(TopicValidator.AUTO_CREATE_TOPIC_KEY_TOPIC)) {
