@@ -104,8 +104,12 @@ public class RouteInfoManager {
      * 主要操作了几个缓存，用来保存broker的信息：
      * <p>
      * <ul>
+     *     // broker集群 节点信息 clusterName -> brokerNames
      *     <li>clusterAddrTable</li>
+     *     // 主从节点信息 brokerName -> BrokerData（主从节点详细信息）
      *     <li>brokerAddrTable</li>
+     *     // 存放Topic配置，这些配置来源有几种，一种是Broker启动时创建的TopicConfig
+     *     <li>topicQueueTable</li>
      *     <li>brokerLiveTable</li>
      *     <li>filterServerTable</li>
      * </ul>
@@ -252,6 +256,7 @@ public class RouteInfoManager {
         } else {
             boolean addNewOne = true;
 
+            // 一个topic对应的QueueData列表中，一个主从对应一个其中一个列表项
             Iterator<QueueData> it = queueDataList.iterator();
             while (it.hasNext()) {
                 QueueData qd = it.next();
