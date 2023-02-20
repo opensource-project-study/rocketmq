@@ -173,7 +173,8 @@ public class TopicConfigManager extends ConfigManager {
                      * 然后若autoCreateTopicEnable过一段时间后设置为false，虽然可以取得defaultTopicConfig，但是此时会设置defaultTopicConfig.perm为读写权限，没有PERM_INHERIT权限，从而无法创建TopicConfig实例
                      *
                      * 无论如何，autoCreateTopicEnable设置为false后，就不能在这里创建TopicConfig实例，也就不能创建Topic；此时，可以在RocketMQ控制台，（对应rocketmq-dashboard项目）手动添加Topic，
-                     * RocketMQ后台会调用方法org.apache.rocketmq.tools.admin.DefaultMQAdminExt.createAndUpdateTopicConfig进行创建。
+                     * RocketMQ后台的接口（/topic/createOrUpdate.do）org.apache.rocketmq.dashboard.controller.TopicController#topicCreateOrUpdateRequest
+                     * 会调用方法org.apache.rocketmq.tools.admin.DefaultMQAdminExt.createAndUpdateTopicConfig进行创建。
                      */
                     TopicConfig defaultTopicConfig = this.topicConfigTable.get(defaultTopic);
                     if (defaultTopicConfig != null) {
