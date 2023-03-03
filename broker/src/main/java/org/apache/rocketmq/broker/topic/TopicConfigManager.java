@@ -47,6 +47,11 @@ public class TopicConfigManager extends ConfigManager {
 
     private transient final Lock topicConfigTableLock = new ReentrantLock();
 
+    /**
+     * topicName -> TopicConfig
+     * <p/>
+     * 存储Topic配置信息，在RocketMQ中，创建了一个Topic，意思是创建了一个TopicConfig，并会调用{@link ConfigManager#persist()}方法把TopicConfig持久化到磁盘上
+     */
     private final ConcurrentMap<String, TopicConfig> topicConfigTable =
         new ConcurrentHashMap<String, TopicConfig>(1024);
     private final DataVersion dataVersion = new DataVersion();

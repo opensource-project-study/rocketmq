@@ -28,11 +28,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.common.DataVersion;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.common.constant.PermName;
+import org.apache.rocketmq.common.protocol.RequestCode;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.common.namesrv.RegisterBrokerResult;
@@ -44,6 +47,7 @@ import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.common.sysflag.TopicSysFlag;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
+import org.apache.rocketmq.tools.admin.MQAdminExt;
 
 public class RouteInfoManager {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
@@ -104,14 +108,33 @@ public class RouteInfoManager {
      * 主要操作了几个缓存，用来保存broker的信息：
      * <p>
      * <ul>
-     *     // broker集群 节点信息 clusterName -> brokerNames
+     *     // broker集群 节点信息 clusterName -> brokerNames {@link ClusterInfo}
      *     <li>clusterAddrTable</li>
-     *     // 主从节点信息 brokerName -> BrokerData（主从节点详细信息）
+     *     // 主从节点信息 brokerName -> BrokerData（主从节点详细信息）{@link ClusterInfo}
      *     <li>brokerAddrTable</li>
-     *     // 存放Topic配置，这些配置来源有几种，一种是Broker启动时创建的TopicConfig
+     *     // 存放Topic配置，这些配置来源有几种，一种是Broker启动时创建的{@link TopicConfig}，一种是发送消息时自动创建的{@link TopicConfig}，一种是通过RocketMQ控制台手动创建的{@link TopicConfig}
+     *     // topicName -> 配置列表（一个主从对应一个配置 {@link QueueData}）
      *     <li>topicQueueTable</li>
+     *     // brokerAddr -> Broker心跳信息 {@link BrokerLiveInfo}
      *     <li>brokerLiveTable</li>
+     *     // brokerAddr ->
      *     <li>filterServerTable</li>
+     * </ul>
+     *
+     * <p>
+     * 该方法是注册Broker信息的一个核心方法，用于存储和更新一些通信信息的元数据<p/>
+     * 该方法的调用方有如下几个：
+     * <ul>
+     *     <li>
+     *         RocketMQ Dashboard控制台手动创建Topic时，会调用{@link MQAdminExt#createAndUpdateTopicConfig(java.lang.String, org.apache.rocketmq.common.TopicConfig)}，
+     *         调用到{@link MQClientAPIImpl#createTopic}，通过Netty和Broker通信（请求码是{@link RequestCode#UPDATE_AND_CREATE_TOPIC}），Broker端的AdminBrokerProcessor处理该Netty请求并响应；
+     *         在Broker端，首先把TopicConfig写入org.apache.rocketmq.broker.topic.TopicConfigManager#topicConfigTable，然后把TopicConfig封装为{@link TopicConfigSerializeWrapper}，通过方法org.apache.rocketmq.broker.BrokerController#doRegisterBrokerAll，
+     *         调用org.apache.rocketmq.broker.out.BrokerOuterAPI#registerBrokerAll把Broker信息连同Topic信息注册到每一个NameServer实例上
+     *     </li>
+     *     <li></li>
+     *     <li></li>
+     *     <li></li>
+     *     <li></li>
      * </ul>
      *
      * @param clusterName clusterName
