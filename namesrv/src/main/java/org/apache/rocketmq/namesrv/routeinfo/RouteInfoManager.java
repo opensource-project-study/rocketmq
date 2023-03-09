@@ -476,6 +476,9 @@ public class RouteInfoManager {
         return null;
     }
 
+    /**
+     * 迭代所有的broker实例，若BROKER_CHANNEL_EXPIRED_TIME=120秒没有检测到broker的心跳信息，则移除该broker实例相关的元数据<p/>
+     */
     public void scanNotActiveBroker() {
         Iterator<Entry<String, BrokerLiveInfo>> it = this.brokerLiveTable.entrySet().iterator();
         while (it.hasNext()) {
@@ -490,6 +493,19 @@ public class RouteInfoManager {
         }
     }
 
+    /**
+     * 移除broker相关的元数据
+     * <ul>
+     *     <li></li>
+     *     <li></li>
+     *     <li></li>
+     *     <li></li>
+     *     <li></li>
+     *     <li></li>
+     * </ul>
+     * @param remoteAddr remoteAddr
+     * @param channel channel
+     */
     public void onChannelDestroy(String remoteAddr, Channel channel) {
         String brokerAddrFound = null;
         if (channel != null) {
