@@ -126,10 +126,11 @@ public class RouteInfoManager {
      * 该方法的调用方有如下几个：
      * <ul>
      *     <li>
-     *         RocketMQ Dashboard控制台手动创建Topic时，会调用{@link MQAdminExt#createAndUpdateTopicConfig(java.lang.String, org.apache.rocketmq.common.TopicConfig)}，
+     *         RocketMQ Dashboard控制台手动创建Topic时（参考rocketmq-dashboard项目：org.apache.rocketmq.dashboard.controller.TopicController#topicCreateOrUpdateRequest），会对所选择集群（可能选择多个集群）下的每个brokerName（一个brokerName对应一个主从）调用{@link MQAdminExt#createAndUpdateTopicConfig(java.lang.String, org.apache.rocketmq.common.TopicConfig)}，
      *         调用到{@link MQClientAPIImpl#createTopic}，通过Netty和Broker通信（请求码是{@link RequestCode#UPDATE_AND_CREATE_TOPIC}），Broker端的AdminBrokerProcessor处理该Netty请求并响应；
      *         在Broker端，首先把TopicConfig写入org.apache.rocketmq.broker.topic.TopicConfigManager#topicConfigTable，然后把TopicConfig封装为{@link TopicConfigSerializeWrapper}，通过方法org.apache.rocketmq.broker.BrokerController#doRegisterBrokerAll，
-     *         调用org.apache.rocketmq.broker.out.BrokerOuterAPI#registerBrokerAll把Broker信息连同Topic信息注册到每一个NameServer实例上
+     *         调用org.apache.rocketmq.broker.out.BrokerOuterAPI#registerBrokerAll，循环调用registerBroker方法（准确的说，是多线程处理）把Broker信息连同Topic信息注册到NameServer集群的每一个NameServer实例上。Broker实例通过Netty和NameServer实例通信（请求码是{@link RequestCode#REGISTER_BROKER}），
+     *         NameServer端的DefaultRequestProcessor处理该Netty请求并响应。然后就调用到该方法。
      *     </li>
      *     <li></li>
      *     <li></li>
