@@ -109,16 +109,16 @@ public class RouteInfoManager {
      * <p>
      * <ul>
      *     // broker集群 节点信息 clusterName -> brokerNames {@link ClusterInfo}
-     *     <li>clusterAddrTable</li>
+     *     <li>{@link #clusterAddrTable}</li>
      *     // 主从节点信息 brokerName -> BrokerData（主从节点详细信息）{@link ClusterInfo}
-     *     <li>brokerAddrTable</li>
+     *     <li>{@link #brokerAddrTable}</li>
      *     // 存放Topic配置，这些配置来源有几种，一种是Broker启动时创建的{@link TopicConfig}，一种是发送消息时自动创建的{@link TopicConfig}，一种是通过RocketMQ控制台手动创建的{@link TopicConfig}
      *     // topicName -> 配置列表（一个主从对应一个配置 {@link QueueData}）
-     *     <li>topicQueueTable</li>
+     *     <li>{@link #topicQueueTable}</li>
      *     // brokerAddr -> Broker心跳信息 {@link BrokerLiveInfo}
-     *     <li>brokerLiveTable</li>
+     *     <li>{@link #brokerLiveTable}</li>
      *     // brokerAddr ->
-     *     <li>filterServerTable</li>
+     *     <li>{@link #filterServerTable}</li>
      * </ul>
      *
      * <p>

@@ -889,7 +889,7 @@ public class BrokerController {
             this.registerBrokerAll(true, false, true);
         }
 
-        // broker实例启动时，周期性的注册自身的IP、端口到所有的NameServer实例
+        // broker实例启动时，周期性的注册自身的IP、端口以及TopicConfig配置信息到所有的NameServer实例
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -913,6 +913,13 @@ public class BrokerController {
 
     }
 
+    /**
+     * 在RocketMQ控制台手动创建Topic时（rocketmq-dashboard项目，接口org.apache.rocketmq.dashboard.controller.TopicController#topicCreateOrUpdateRequest），会调用到这里。<p/>
+     * 在org.apache.rocketmq.namesrv.routeinfo.RouteInfoManager#registerBroker已经详细分析过。
+     *
+     * @param topicConfig topicConfig
+     * @param dataVersion dataVersion
+     */
     public synchronized void registerIncrementBrokerData(TopicConfig topicConfig, DataVersion dataVersion) {
         TopicConfig registerTopicConfig = topicConfig;
         if (!PermName.isWriteable(this.getBrokerConfig().getBrokerPermission())
@@ -931,6 +938,22 @@ public class BrokerController {
         doRegisterBrokerAll(true, false, topicConfigSerializeWrapper);
     }
 
+    /**
+     * 调用方主要有：
+     * <ul>
+     *     <li>broker实例启动时，若org.apache.rocketmq.store.config.MessageStoreConfig#enableDLegerCommitLog配置为false时，调用该方法注册一次</li>
+     *     <li>broker实例启动时，周期性的注册自身的IP、端口以及TopicConfig配置信息到NameServer集群下的所有NameServer实例</li>
+     *     <li>DLedger相关，参考：{@link DLedgerRoleChangeHandler}</li>
+     *     <li>请求码为{@link RequestCode#UPDATE_BROKER_CONFIG}，什么情况下会使用这个请求码呢？</li>
+     *     <li>若Client在发放消息时创建Topic，会调用此方法进行注册，参考：{@link TopicConfigManager#createTopicInSendMessageMethod}</li>
+     *     <li>{@link TopicConfigManager#createTopicInSendMessageBackMethod} 待确认</li>
+     *     <li>{@link TopicConfigManager#createTopicOfTranCheckMaxTime} 待确认</li>
+     * </ul>
+     *
+     * @param checkOrderConfig checkOrderConfig
+     * @param oneway oneway
+     * @param forceRegister forceRegister
+     */
     public synchronized void registerBrokerAll(final boolean checkOrderConfig, boolean oneway, boolean forceRegister) {
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
 
@@ -992,7 +1015,8 @@ public class BrokerController {
         final int timeoutMills) {
 
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
-        // broker和NameServer间进行了通信
+        // broker和NameServer间进行了通信（请求码是org.apache.rocketmq.common.protocol.RequestCode.QUERY_DATA_VERSION）
+        // 在NameServer是通过org.apache.rocketmq.namesrv.routeinfo.RouteInfoManager.brokerLiveTable这个元数据来判断的。
         List<Boolean> changeList = brokerOuterAPI.needRegister(clusterName, brokerAddr, brokerName, brokerId, topicConfigWrapper, timeoutMills);
         boolean needRegister = false;
         for (Boolean changed : changeList) {
