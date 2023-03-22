@@ -81,6 +81,9 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
     private final Timer timer = new Timer("ClientHouseKeepingService", true);
 
+    /**
+     * 保存NameServer地址列表
+     */
     private final AtomicReference<List<String>> namesrvAddrList = new AtomicReference<List<String>>();
     private final AtomicReference<String> namesrvAddrChoosed = new AtomicReference<String>();
     private final AtomicInteger namesrvIndex = new AtomicInteger(initValueIndex());
@@ -332,6 +335,11 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         }
     }
 
+    /**
+     * 将addrs写入属性{@link #namesrvAddrList}
+     *
+     * @param addrs addrs
+     */
     @Override
     public void updateNameServerAddressList(List<String> addrs) {
         List<String> old = this.namesrvAddrList.get();
