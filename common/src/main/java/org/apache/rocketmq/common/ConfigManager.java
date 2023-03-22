@@ -21,6 +21,15 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 
+/**
+ * 所有配置管理类的父类
+ *
+ * <p>配置管理的基本流程：
+ * <ol>
+ *     <li>服务启动时，调用{@link #load()}方法从配置文件加载配置。并把配置保存在配置管理类的缓存中（例如：org.apache.rocketmq.broker.topic.TopicConfigManager#topicConfigTable）</li>
+ *     <li>若配置发生变更（新增、更新、删除等），调用{@link #persist()}方法持久化配置到磁盘具体的路径上{@link #configFilePath()}</li>
+ * </ol>
+ */
 public abstract class ConfigManager {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);
 

@@ -121,6 +121,7 @@ public class BrokerStartup {
                 messageStoreConfig.setAccessMessageInMemoryMaxRatio(ratio);
             }
 
+            // 从配置文件broker.config加载配置到properties，然后把properties里的配置写入brokerConfig、nettyServerConfig、nettyClientConfig、messageStoreConfig等。
             if (commandLine.hasOption('c')) {
                 String file = commandLine.getOptionValue('c');
                 if (file != null) {
