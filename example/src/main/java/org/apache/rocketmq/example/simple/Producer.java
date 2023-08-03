@@ -29,6 +29,7 @@ public class Producer {
 
         DefaultMQProducer producer = new DefaultMQProducer("simple_message_producer_group_1");
         producer.setNamesrvAddr("localhost:9876");
+//        producer.setNamesrvAddr("192.168.3.129:9876");
         // 同步发送失败重投次数 参考：docs/cn/features.md
         producer.setRetryTimesWhenSendFailed(2);
         producer.start();
