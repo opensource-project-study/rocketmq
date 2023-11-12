@@ -100,6 +100,7 @@ public class ClientManageProcessor extends AsyncNettyRequestProcessor implements
                     PermName.PERM_WRITE | PermName.PERM_READ, topicSysFlag);
             }
 
+            // 注册Consumer信息
             boolean changed = this.brokerController.getConsumerManager().registerConsumer(
                 data.getGroupName(),
                 clientChannelInfo,

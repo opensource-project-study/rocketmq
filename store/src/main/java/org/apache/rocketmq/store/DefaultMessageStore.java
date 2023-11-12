@@ -574,8 +574,11 @@ public class DefaultMessageStore implements MessageStore {
                         final boolean diskFallRecorded = this.messageStoreConfig.isDiskFallRecorded();
                         ConsumeQueueExt.CqExtUnit cqExtUnit = new ConsumeQueueExt.CqExtUnit();
                         for (; i < bufferConsumeQueue.getSize() && i < maxFilterMessageCount; i += ConsumeQueue.CQ_STORE_UNIT_SIZE) {
+                            // 8字节的commitlog偏移量
                             long offsetPy = bufferConsumeQueue.getByteBuffer().getLong();
+                            // 4字节的消息长度
                             int sizePy = bufferConsumeQueue.getByteBuffer().getInt();
+                            // 8字节的tag hashcode
                             long tagsCode = bufferConsumeQueue.getByteBuffer().getLong();
 
                             maxPhyOffsetPulling = offsetPy;
@@ -605,6 +608,7 @@ public class DefaultMessageStore implements MessageStore {
                                 }
                             }
 
+                            // 根据tag hashcode过滤消息
                             if (messageFilter != null
                                 && !messageFilter.isMatchedByConsumeQueue(isTagsCodeLegal ? tagsCode : null, extRet ? cqExtUnit : null)) {
                                 if (getResult.getBufferTotalSize() == 0) {
@@ -645,6 +649,7 @@ public class DefaultMessageStore implements MessageStore {
                             brokerStatsManager.recordDiskFallBehindSize(group, topic, queueId, fallBehind);
                         }
 
+                        // 更新下一次拉取消息的偏移量
                         nextBeginOffset = offset + (i / ConsumeQueue.CQ_STORE_UNIT_SIZE);
 
                         long diff = maxOffsetPy - maxPhyOffsetPulling;

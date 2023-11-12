@@ -571,6 +571,9 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         }
     }
 
+    /**
+     * 同步方法以进行并发控制，防止在一个DefaultMQPushConsumer实例上连续调用多次start方法
+     */
     public synchronized void start() throws MQClientException {
         switch (this.serviceState) {
             case CREATE_JUST:
@@ -586,6 +589,9 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                     this.defaultMQPushConsumer.changeInstanceNameToPID();
                 }
 
+                // 多个DefaultMQPushConsumer实例共用一个MQClientInstance实例，除非MQClientInstance实例设置了unitName属性
+                // 在创建MQClientInstance实例时创建了MQClientAPIImpl实例，在MQClientAPIImpl的构造方法中创建了NettyRemotingClient实例，
+                // 即默认设置下，一个RocketMQ Client进程中的多个consumer共用一个Netty客户端
                 this.mQClientFactory = MQClientManager.getInstance().getOrCreateMQClientInstance(this.defaultMQPushConsumer, this.rpcHook);
 
                 this.rebalanceImpl.setConsumerGroup(this.defaultMQPushConsumer.getConsumerGroup());
@@ -606,6 +612,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                             this.offsetStore = new LocalFileOffsetStore(this.mQClientFactory, this.defaultMQPushConsumer.getConsumerGroup());
                             break;
                         case CLUSTERING:
+                            // 创建offsetStore实例，在负载均衡逻辑会用到查询consumerGroup在一个Topic下的消费偏移量
                             this.offsetStore = new RemoteBrokerOffsetStore(this.mQClientFactory, this.defaultMQPushConsumer.getConsumerGroup());
                             break;
                         default:
@@ -613,6 +620,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                     }
                     this.defaultMQPushConsumer.setOffsetStore(this.offsetStore);
                 }
+                // 加载偏移量
                 this.offsetStore.load();
 
                 if (this.getMessageListenerInner() instanceof MessageListenerOrderly) {
@@ -627,6 +635,11 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
                 this.consumeMessageService.start();
 
+                // 以consumerGroup为key注册consumer，即在一个RocketMQ Client进程中，一个consumerGroup下只有一个consumer实例
+                // 并且心跳信息也依赖此注册的信息
+                // 所以，若在一个RocketMQ Client进程中的一个consumerGroup下有多个consumer实例，如果注册的consumer发生改变，只可能发生在RocketMQ client进程重启或者重新部署的时候
+                // 从另一个角度来说，因为心跳信息依赖注册的consumer信息，所以，当存在多个RocketMQ Client进程时，若consumerGroup相同，但是不同进程下consumer订阅的topic或tag等不同，则
+                // broker接收到心跳信息后，最后一次的心跳信息会覆盖掉前面的心跳信息
                 boolean registerOK = mQClientFactory.registerConsumer(this.defaultMQPushConsumer.getConsumerGroup(), this);
                 if (!registerOK) {
                     this.serviceState = ServiceState.CREATE_JUST;
@@ -839,6 +852,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 }
             }
 
+            // 设置MessageListener
             if (null == this.messageListenerInner) {
                 this.messageListenerInner = this.defaultMQPushConsumer.getMessageListener();
             }

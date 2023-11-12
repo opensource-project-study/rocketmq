@@ -65,6 +65,7 @@ import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.constant.PermName;
 import org.apache.rocketmq.common.filter.ExpressionType;
 import org.apache.rocketmq.common.protocol.NamespaceUtil;
+import org.apache.rocketmq.common.protocol.RequestCode;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
@@ -223,6 +224,7 @@ public class MQClientInstance {
 
     public void start() throws MQClientException {
 
+        // 虽然调用方进行了并发控制，但是由于存在多个调用方，因此还是需要同步
         synchronized (this) {
             switch (this.serviceState) {
                 case CREATE_JUST:
@@ -232,12 +234,16 @@ public class MQClientInstance {
                         this.mQClientAPIImpl.fetchNameServerAddr();
                     }
                     // Start request-response channel
+                    // 创建Netty客户端
                     this.mQClientAPIImpl.start();
                     // Start various schedule tasks
+                    // 启动多个定时任务
                     this.startScheduledTask();
                     // Start pull service
+                    // 启动拉取消息的线程
                     this.pullMessageService.start();
                     // Start rebalance service
+                    // 启动负载均衡的线程
                     this.rebalanceService.start();
                     // Start push service
                     this.defaultMQProducer.getDefaultMQProducerImpl().start(false);
@@ -285,6 +291,7 @@ public class MQClientInstance {
             public void run() {
                 try {
                     MQClientInstance.this.cleanOfflineBroker();
+                    // 向所有broker发送心跳信息
                     MQClientInstance.this.sendHeartbeatToAllBrokerWithLock();
                 } catch (Exception e) {
                     log.error("ScheduledTask sendHeartbeatToAllBroker exception", e);
@@ -297,6 +304,7 @@ public class MQClientInstance {
             @Override
             public void run() {
                 try {
+                    // 持久化consumerGroup在一个topic下的消费偏移量，和broker进行通信，RequestCode为RequestCode.UPDATE_CONSUMER_OFFSET
                     MQClientInstance.this.persistAllConsumerOffset();
                 } catch (Exception e) {
                     log.error("ScheduledTask persistAllConsumerOffset exception", e);
@@ -464,6 +472,9 @@ public class MQClientInstance {
         }
     }
 
+    /**
+     * 因为可能有多个调用方同时调用，所以需要加锁
+     */
     public void sendHeartbeatToAllBrokerWithLock() {
         if (this.lockHeartbeat.tryLock()) {
             try {
@@ -527,6 +538,11 @@ public class MQClientInstance {
         return false;
     }
 
+    /**
+     * 向broker集群的每个broker实例发送心跳信息，心跳信息包括生产者信息和消费者信息，消费者信息以consumerGroup为基础来进行组织<p/>
+     * 所谓订阅消息一致，即是由心跳信息和对心跳信息的处理来保证的，client和broker进行netty通信，RequestCode是{@link RequestCode#HEART_BEAT}
+     *
+     */
     private void sendHeartbeatToAllBroker() {
         final HeartbeatData heartbeatData = this.prepareHeartbeatData();
         final boolean producerEmpty = heartbeatData.getProducerDataSet().isEmpty();

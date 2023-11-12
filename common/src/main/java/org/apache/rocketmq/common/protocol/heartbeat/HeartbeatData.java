@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 
 public class HeartbeatData extends RemotingSerializable {
+    /** 启动RocketMQ Client的进程（在分布式环境中，一般是一个微服务实例）对应一个clientId */
     private String clientID;
     private Set<ProducerData> producerDataSet = new HashSet<ProducerData>();
     private Set<ConsumerData> consumerDataSet = new HashSet<ConsumerData>();
