@@ -124,6 +124,9 @@ public class ProcessQueue {
         }
     }
 
+    /**
+     * 把消息按照queueOffset顺序保存在一个TreeMap中，供后续顺序取消息进行消费
+     */
     public boolean putMessage(final List<MessageExt> msgs) {
         boolean dispatchToConsume = false;
         try {
@@ -300,10 +303,12 @@ public class ProcessQueue {
         List<MessageExt> result = new ArrayList<MessageExt>(batchSize);
         final long now = System.currentTimeMillis();
         try {
+            // 加锁
             this.treeMapLock.writeLock().lockInterruptibly();
             this.lastConsumeTimestamp = now;
             try {
                 if (!this.msgTreeMap.isEmpty()) {
+                    // 因为TreeMap是有序的，只需从TreeMap第一个Entry开始顺序取batchSize个即可
                     for (int i = 0; i < batchSize; i++) {
                         Map.Entry<Long, MessageExt> entry = this.msgTreeMap.pollFirstEntry();
                         if (entry != null) {

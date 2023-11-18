@@ -322,6 +322,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
                             long firstMsgOffset = Long.MAX_VALUE;
                             if (pullResult.getMsgFoundList() == null || pullResult.getMsgFoundList().isEmpty()) {
+                                // 若未拉取到消息，放入队列 PullMessageService.pullRequestQueue 进行重新拉取
                                 DefaultMQPushConsumerImpl.this.executePullRequestImmediately(pullRequest);
                             } else {
                                 firstMsgOffset = pullResult.getMsgFoundList().get(0).getQueueOffset();
@@ -329,7 +330,9 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                                 DefaultMQPushConsumerImpl.this.getConsumerStatsManager().incPullTPS(pullRequest.getConsumerGroup(),
                                     pullRequest.getMessageQueue().getTopic(), pullResult.getMsgFoundList().size());
 
+                                // 拉取到的消息放入该MessageQueue对应的ProcessQueue中，ProcessQueue使用TreeMap按照queueOffset来保存每一条消息
                                 boolean dispatchToConsume = processQueue.putMessage(pullResult.getMsgFoundList());
+                                // 提交到业务线程池进行异步消费
                                 DefaultMQPushConsumerImpl.this.consumeMessageService.submitConsumeRequest(
                                     pullResult.getMsgFoundList(),
                                     processQueue,
@@ -589,9 +592,11 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                     this.defaultMQPushConsumer.changeInstanceNameToPID();
                 }
 
-                // 多个DefaultMQPushConsumer实例共用一个MQClientInstance实例，除非MQClientInstance实例设置了unitName属性
+                // 多个DefaultMQPushConsumer实例共用一个MQClientInstance实例，除非DefaultMQPushConsumer实例设置了unitName属性
                 // 在创建MQClientInstance实例时创建了MQClientAPIImpl实例，在MQClientAPIImpl的构造方法中创建了NettyRemotingClient实例，
                 // 即默认设置下，一个RocketMQ Client进程中的多个consumer共用一个Netty客户端
+                // 换句话说，可以通过设置unitName属性对consumerGroup进行分组，unitName相同的其生成的clientId也相同，每个unitName对应一个MQClientInstance实例，每个unitName对应一个Netty客户端
+                // 即是在一个RocketMQ Client进程下，可能会有多个clientId，用于对consumerGroup进行分组，但是每个consumerGroup只会对应一个clientId
                 this.mQClientFactory = MQClientManager.getInstance().getOrCreateMQClientInstance(this.defaultMQPushConsumer, this.rpcHook);
 
                 this.rebalanceImpl.setConsumerGroup(this.defaultMQPushConsumer.getConsumerGroup());
@@ -623,6 +628,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 // 加载偏移量
                 this.offsetStore.load();
 
+                // 根据MessageListener的类型设置ConsumeMessageService
                 if (this.getMessageListenerInner() instanceof MessageListenerOrderly) {
                     this.consumeOrderly = true;
                     this.consumeMessageService =

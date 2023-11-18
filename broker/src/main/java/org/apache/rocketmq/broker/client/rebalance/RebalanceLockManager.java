@@ -102,6 +102,9 @@ public class RebalanceLockManager {
         if (groupValue != null) {
             LockEntry lockEntry = groupValue.get(mq);
             if (lockEntry != null) {
+                // 对于一个consumerGroup，按照clientId进行锁定，即一个MessageQueue只能用于一个clientId
+                // 在client端，在一个RocketMQ Client进程下用clientId对consumerGroup进行分组，但是一个consumerGroup只会对应一个clientId。在一个Client进程下的一个consumerGroup下只有一个consumer实例
+                // 换句话说，对于一个consumerGroup，只有一个Client进程下的一个consumer实例可以获取锁，进而消费这个MessageQueue
                 boolean locked = lockEntry.isLocked(clientId);
                 if (locked) {
                     lockEntry.setLastUpdateTimestamp(System.currentTimeMillis());
@@ -114,6 +117,16 @@ public class RebalanceLockManager {
         return false;
     }
 
+    /**
+     * 使用{@link #mqLockTable}进行加锁，对于一个group下的ConcurrentHashMap<MessageQueue, LockEntry>，只要MessageQueue写入到这个Map成功，就认为加锁成功<p/>
+     * 类似于使用数据库的表实现业务上的锁功能，例如锁定一个漫剧下的几集，锁定一集向表中加一条记录。锁定用户的充值流水，也可以用这种锁定。等等。<p>
+     *
+     *
+     * @param group
+     * @param mqs
+     * @param clientId
+     * @return
+     */
     public Set<MessageQueue> tryLockBatch(final String group, final Set<MessageQueue> mqs,
         final String clientId) {
         Set<MessageQueue> lockedMqs = new HashSet<MessageQueue>(mqs.size());

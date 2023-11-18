@@ -172,6 +172,10 @@ public class ConsumerGroupInfo {
             }
         }
 
+        // 若两个RocketMQ Client进程分别有一个consumer实例，其consumerGroup相同，但是订阅的Topic不同
+        // 假设consumer1订阅TopicA，consumer2订阅TopicB，若先收到consumer1的心跳，则consumer2的心跳信息会将consumer1的覆盖掉，即会把TopicA这个entry移除掉
+        // 假设consumer1订阅TopicA和TopicB，consumer2订阅TopicA，若先收到consumer1的心跳，则consumer2的心跳信息会将consumer1的覆盖掉，即会把consumer1的TopicA和TopicB的entry都移除掉
+        // 无论如何，同一consumerGroup下的consumer实例的订阅关系要一致，因为最后的心跳信息会覆盖掉之前的心跳信息
         Iterator<Entry<String, SubscriptionData>> it = this.subscriptionTable.entrySet().iterator();
         while (it.hasNext()) {
             Entry<String, SubscriptionData> next = it.next();
@@ -185,6 +189,7 @@ public class ConsumerGroupInfo {
                 }
             }
 
+            // 如果现有的topic订阅信息不存在于最新的订阅信息subList里面，就从subscriptionTable中将其移除
             if (!exist) {
                 log.warn("subscription changed, group: {} remove topic {} {}",
                     this.groupName,

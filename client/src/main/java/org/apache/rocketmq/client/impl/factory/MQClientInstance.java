@@ -225,6 +225,7 @@ public class MQClientInstance {
     public void start() throws MQClientException {
 
         // 虽然调用方进行了并发控制，但是由于存在多个调用方，因此还是需要同步
+        // 从另一个角度说，默认情况下（即DefaultMQPushConsumer实例没有设置unitName属性时），多个DefaultMQPushConsumer实例共用一个MQClientInstance实例，多个consumer实例启动后，都会调用到这里，自然需要进行同步
         synchronized (this) {
             switch (this.serviceState) {
                 case CREATE_JUST:
