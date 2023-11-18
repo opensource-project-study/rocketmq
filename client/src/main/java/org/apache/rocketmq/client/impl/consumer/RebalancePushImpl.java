@@ -89,8 +89,9 @@ public class RebalancePushImpl extends RebalanceImpl {
         if (this.defaultMQPushConsumerImpl.isConsumeOrderly()
             && MessageModel.CLUSTERING.equals(this.defaultMQPushConsumerImpl.messageModel())) {
             try {
-                // 必须加消费锁，因为消息可能正在被消费，同时，在消费消息时也要加这个锁，以避免
-                // 该MessageQueue被分配给该consumerGroup下的其它consumer实例时导致重复消费
+                // 必须加消费锁，因为消息可能正在被消费，同时，在消费消息时也要加这个锁
+                // 目的是在从processQueueTable中把mq->pq这个Entry移除之前，完成正在消费的那条消息的逻辑处理
+                // 参考：ConsumeMessageOrderlyService.ConsumeRequest#run
                 if (pq.getConsumeLock().tryLock(1000, TimeUnit.MILLISECONDS)) {
                     try {
                         return this.unlockDelay(mq, pq);

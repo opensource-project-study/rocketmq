@@ -483,8 +483,10 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
                             ConsumeReturnType returnType = ConsumeReturnType.SUCCESS;
                             boolean hasException = false;
                             try {
-                                // 加消费锁
-                                // 参考：org.apache.rocketmq.client.impl.consumer.RebalancePushImpl.removeUnnecessaryMessageQueue
+                                /**
+                                 * 加消费锁
+                                 * 参考：{@link RebalancePushImpl#removeUnnecessaryMessageQueue
+                                 */
                                 this.processQueue.getConsumeLock().lock();
                                 if (this.processQueue.isDropped()) {
                                     log.warn("consumeMessage, the message queue not be able to consume, because it's dropped. {}",

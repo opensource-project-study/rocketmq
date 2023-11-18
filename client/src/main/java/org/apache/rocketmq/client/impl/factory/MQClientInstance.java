@@ -176,6 +176,8 @@ public class MQClientInstance {
         } else {
             List<QueueData> qds = route.getQueueDatas();
             Collections.sort(qds);
+            // 对于每一个QueueData，根据brokerName从broker集群中取一个broker主从
+            // 实际上，一个broker主从对应一个QueueData，同时一个broker主从对应一个BrokerData，因此用brokerName来关联
             for (QueueData qd : qds) {
                 if (PermName.isWriteable(qd.getPerm())) {
                     BrokerData brokerData = null;
@@ -194,6 +196,7 @@ public class MQClientInstance {
                         continue;
                     }
 
+                    // 根据写队列数创建若干个MessageQueue
                     for (int i = 0; i < qd.getWriteQueueNums(); i++) {
                         MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
                         info.getMessageQueueList().add(mq);
@@ -279,6 +282,7 @@ public class MQClientInstance {
             @Override
             public void run() {
                 try {
+                    // 更新路由信息
                     MQClientInstance.this.updateTopicRouteInfoFromNameServer();
                 } catch (Exception e) {
                     log.error("ScheduledTask updateTopicRouteInfoFromNameServer exception", e);

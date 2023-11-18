@@ -421,6 +421,9 @@ public class RouteInfoManager {
         }
     }
 
+    /**
+     * 根据缓存中的元数据创建TopicRouteData返回client端
+     */
     public TopicRouteData pickupTopicRouteData(final String topic) {
         TopicRouteData topicRouteData = new TopicRouteData();
         boolean foundQueueData = false;

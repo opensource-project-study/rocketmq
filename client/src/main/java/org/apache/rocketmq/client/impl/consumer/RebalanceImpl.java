@@ -340,6 +340,7 @@ public abstract class RebalanceImpl {
             ProcessQueue pq = next.getValue();
 
             if (mq.getTopic().equals(topic)) {
+                // 如果mqSet中没有该mq，从processQueueTable中把mq->pq这个Entry移除
                 if (!mqSet.contains(mq)) {
                     pq.setDropped(true);
                     if (this.removeUnnecessaryMessageQueue(mq, pq)) {
@@ -352,6 +353,7 @@ public abstract class RebalanceImpl {
                         case CONSUME_ACTIVELY:
                             break;
                         case CONSUME_PASSIVELY:
+                            // 如果mqSet中有该mq，但是pq过期了，也从processQueueTable中把mq->pq这个Entry移除
                             pq.setDropped(true);
                             if (this.removeUnnecessaryMessageQueue(mq, pq)) {
                                 it.remove();
@@ -376,10 +378,12 @@ public abstract class RebalanceImpl {
                 }
 
                 this.removeDirtyOffset(mq);
+                // 创建一个ProcessQueue
                 ProcessQueue pq = new ProcessQueue();
 
                 long nextOffset = -1L;
                 try {
+                    // 获取该MessageQueue对象的下一个进度消费值offset
                     nextOffset = this.computePullFromWhereWithException(mq);
                 } catch (Exception e) {
                     log.info("doRebalance, {}, compute offset failed, {}", consumerGroup, mq);
