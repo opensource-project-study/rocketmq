@@ -130,6 +130,7 @@ public class ProcessQueue {
     public boolean putMessage(final List<MessageExt> msgs) {
         boolean dispatchToConsume = false;
         try {
+            // 加锁
             this.treeMapLock.writeLock().lockInterruptibly();
             try {
                 int validMsgCnt = 0;
