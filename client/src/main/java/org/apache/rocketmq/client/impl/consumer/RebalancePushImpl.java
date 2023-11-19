@@ -92,6 +92,9 @@ public class RebalancePushImpl extends RebalanceImpl {
                 // 必须加消费锁，因为消息可能正在被消费，同时，在消费消息时也要加这个锁
                 // 目的是在从processQueueTable中把mq->pq这个Entry移除之前，完成正在消费的那条消息的逻辑处理
                 // 参考：ConsumeMessageOrderlyService.ConsumeRequest#run
+                //
+                // 重平衡时，可能把该MessageQueue分配给其它Client进程下的consumer实例（同一consumerGroup下），从而在本Client进程中把MessageQueue移除，
+                // 因为此时MessageQueue中的消息可能正在被消费，所以要加一个锁。
                 if (pq.getConsumeLock().tryLock(1000, TimeUnit.MILLISECONDS)) {
                     try {
                         return this.unlockDelay(mq, pq);
