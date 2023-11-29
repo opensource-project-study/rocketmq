@@ -596,7 +596,11 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 // 在创建MQClientInstance实例时创建了MQClientAPIImpl实例，在MQClientAPIImpl的构造方法中创建了NettyRemotingClient实例，
                 // 即默认设置下，一个RocketMQ Client进程中的多个consumer共用一个Netty客户端
                 // 换句话说，可以通过设置unitName属性对consumerGroup进行分组，unitName相同的其生成的clientId也相同，每个unitName对应一个MQClientInstance实例，每个unitName对应一个Netty客户端
-                // 即是在一个RocketMQ Client进程下，可能会有多个clientId，用于对consumerGroup进行分组，但是每个consumerGroup只会对应一个clientId
+                // 即是在一个RocketMQ Client进程下，可能会有多个clientId，用于对consumerGroup进行分组
+                // 一个特殊的情况是，在一个RocketMQ Client进程下，假设有两个consumer实例，consumerA和consumerB，两者的consumerGroup相同，consumerA没有设置unitName，consumerB设置了unitName，则
+                // consumerA在clientIdA下，consumerB在clientIdB下，此时，consumerA和consumerB的行为和分布在两个RocketMQ Client下的设置相同consumerGroup的两个consumer实例的行为是一致的。
+                // broker端的一个consumerGroup下的org.apache.rocketmq.broker.client.ConsumerGroupInfo.channelInfoTable是以Channel为key存储的，而clientIdA和clientIdB分别对应不同的Netty客户端，
+                // 此时，对于使用相同broker addr调用方法org.apache.rocketmq.remoting.netty.NettyRemotingClient.getAndCreateChannel生成的Channel自然也不同，因此，clientIdA和clientIdB都会存储在broker
                 this.mQClientFactory = MQClientManager.getInstance().getOrCreateMQClientInstance(this.defaultMQPushConsumer, this.rpcHook);
 
                 this.rebalanceImpl.setConsumerGroup(this.defaultMQPushConsumer.getConsumerGroup());
