@@ -29,6 +29,9 @@ public abstract class ServiceThread implements Runnable {
 
     private Thread thread;
     protected final CountDownLatch2 waitPoint = new CountDownLatch2(1);
+    /**
+     * 这里根本没有必要加volatile关键字，因为原子类中的value属性加了volatile关键字，例如{@link AtomicBoolean}中的value属性
+     */
     protected volatile AtomicBoolean hasNotified = new AtomicBoolean(false);
     protected volatile boolean stopped = false;
     protected boolean isDaemon = false;
