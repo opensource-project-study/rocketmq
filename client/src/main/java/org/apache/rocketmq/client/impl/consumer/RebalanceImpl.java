@@ -50,6 +50,7 @@ public abstract class RebalanceImpl {
         new ConcurrentHashMap<String, SubscriptionData>();
     protected String consumerGroup;
     protected MessageModel messageModel;
+    /** 默认是{@link org.apache.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragely} */
     protected AllocateMessageQueueStrategy allocateMessageQueueStrategy;
     protected MQClientInstance mQClientFactory;
 

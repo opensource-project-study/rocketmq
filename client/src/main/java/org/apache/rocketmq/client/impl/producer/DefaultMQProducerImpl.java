@@ -1268,6 +1268,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         Validators.checkMessage(msg, this.defaultMQProducer);
 
         SendResult sendResult = null;
+        // 写入事务消息属性TRAN_MSG，后续broker据此属性判断处理的消息是否为事务消息
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_TRANSACTION_PREPARED, "true");
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_PRODUCER_GROUP, this.defaultMQProducer.getProducerGroup());
         try {
@@ -1342,6 +1343,12 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         return send(msg, this.defaultMQProducer.getSendMsgTimeout());
     }
 
+    /**
+     * <p>根据本地事务执行的状态localTransactionState决定二阶段的COMMIT或ROLLBACK
+     * <p>这是一个远程RPC，可能失败，即本地事务的执行状态可能和这个RPC的状态不一致，所以，需要引入补偿机制，使两者状态最终一致
+     *
+     * @see org.apache.rocketmq.broker.transaction.TransactionalMessageCheckService
+     */
     public void endTransaction(
         final Message msg,
         final SendResult sendResult,
